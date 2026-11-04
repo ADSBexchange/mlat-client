@@ -33,11 +33,12 @@ from mlat.client.util import log, monotonic_time
 class ReceiverConnection(ReconnectingConnection):
     inactivity_timeout = 150.0
 
-    def __init__(self, host, port, mode):
+    def __init__(self, host, port, mode, timestamp_at_frame_start=False):
         ReconnectingConnection.__init__(self, host, port)
         self.coordinator = None
         self.last_data_received = None
         self.mode = mode
+        self.timestamp_at_frame_start = timestamp_at_frame_start
 
         # set up filters
 
@@ -103,6 +104,7 @@ class ReceiverConnection(ReconnectingConnection):
         self.reader.default_filter = self.default_filter
         self.reader.specific_filter = self.specific_filter
         self.reader.modeac_filter = self.modeac_filter
+        self.reader.timestamp_at_frame_start = self.timestamp_at_frame_start
 
     def start_connection(self):
         log('Input connected to {0}:{1}', self.host, self.port)
