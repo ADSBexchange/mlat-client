@@ -39,9 +39,13 @@ _receiver_types = {
     'radarcape_12mhz': (_modes.BEAST,     'radarcape_12mhz'),  # compat
     'radarcape_gps':   (_modes.RADARCAPE, 'radarcape_gps'),    # compat
     'radarcape':       (_modes.RADARCAPE, 'radarcape_gps'),    # autodetects gps if present (doesn't work with intermediary decoder between mlat-cleint and radarcape, assume radarcape_gps)
+    'gps_frame_start': (_modes.RADARCAPE, 'radarcape_gps'),    # 1GHz GPS timestamps taken at the start of the frame
     'sbs':             (_modes.SBS,       'sbs'),
     'avrmlat':         (_modes.AVRMLAT,   'unknown'),
 }
+
+# input types whose timestamps already refer to the start of the frame
+_frame_start_timestamp_types = {'gps_frame_start'}
 
 
 def latitude(s):
@@ -198,4 +202,5 @@ def build_outputs(args):
 def build_receiver_connection(args):
     return ReceiverConnection(host=args.input_connect[0],
                               port=args.input_connect[1],
-                              mode=connection_mode(args))
+                              mode=connection_mode(args),
+                              timestamp_at_frame_start=args.input_type in _frame_start_timestamp_types)

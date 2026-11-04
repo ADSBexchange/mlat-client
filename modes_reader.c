@@ -78,6 +78,7 @@ typedef struct {
     char want_mlat_messages;
     char want_invalid_messages;
     char want_events;
+    char timestamp_at_frame_start;
 
     /* filtering */
     PyObject *seen;
@@ -111,6 +112,7 @@ static PyMemberDef modesreaderMembers[] = {
     { "want_mlat_messages",    T_BOOL,      offsetof(modesreader, want_mlat_messages),    0,         "should the decoder return synthetic mlat messages?" },
     { "want_invalid_messages", T_BOOL,      offsetof(modesreader, want_invalid_messages), 0,         "should the decoder return invalid messages?" },
     { "want_events",           T_BOOL,      offsetof(modesreader, want_events),           0,         "should the decoder return metadata events?" },
+    { "timestamp_at_frame_start", T_BOOL,   offsetof(modesreader, timestamp_at_frame_start), 0,      "are 1GHz timestamps already taken at the start of the frame?" },
     { "seen",                  T_OBJECT,    offsetof(modesreader, seen),                  0,         "set of addresses seen by the decoder" },
     { "default_filter",        T_OBJECT,    offsetof(modesreader, default_filter),        0,         "DF accept filter for all aircraft"},
     { "specific_filter",       T_OBJECT,    offsetof(modesreader, specific_filter),       0,         "DF accept filter for specific aircraft"},
@@ -264,6 +266,7 @@ static PyObject *modesreader_new(PyTypeObject *type, PyObject *args, PyObject *k
     self->want_mlat_messages = 0;
     self->want_invalid_messages = 0;
     self->want_events = 1;
+    self->timestamp_at_frame_start = 0;
 
     Py_INCREF(Py_None); self->seen = Py_None;
     Py_INCREF(Py_None); self->default_filter = Py_None;
@@ -900,7 +903,10 @@ static PyObject *feed_beast(modesreader *self, Py_buffer *buffer, int max_messag
 
                 /* adjust the timestamps so they always reflect the start of the frame */
                 uint64_t adjust;
-                if (type == '1') {
+                if (self->timestamp_at_frame_start) {
+                    // receiver already timestamps the leading edge of the first preamble pulse
+                    adjust = 0;
+                } else if (type == '1') {
                     // Mode A/C, timestamp reported at F2 which is 20.3us after F1
                     adjust = 20300;
                 } else if (type == '2') {
