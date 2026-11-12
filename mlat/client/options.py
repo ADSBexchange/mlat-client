@@ -40,17 +40,12 @@ _receiver_types = {
     'radarcape_gps':   (_modes.RADARCAPE, 'radarcape_gps'),    # compat
     'radarcape':       (_modes.RADARCAPE, 'radarcape_gps'),    # autodetects gps if present (doesn't work with intermediary decoder between mlat-cleint and radarcape, assume radarcape_gps)
     'gps_frame_start': (_modes.RADARCAPE, 'radarcape_gps'),    # 1GHz GPS timestamps taken at the start of the frame
-    'openair':         (_modes.RADARCAPE, 'radarcape_gps'),    # Avionix openAir, short frames 56us late
     'sbs':             (_modes.SBS,       'sbs'),
     'avrmlat':         (_modes.AVRMLAT,   'unknown'),
 }
 
-# input types whose timestamps already refer to the start of the frame,
-# mapped to the nanoseconds to subtract from Mode S short frame timestamps
-_frame_start_timestamp_types = {
-    'gps_frame_start': 0,
-    'openair': 56000,
-}
+# input types whose timestamps already refer to the start of the frame
+_frame_start_timestamp_types = {'gps_frame_start'}
 
 
 def latitude(s):
@@ -208,5 +203,4 @@ def build_receiver_connection(args):
     return ReceiverConnection(host=args.input_connect[0],
                               port=args.input_connect[1],
                               mode=connection_mode(args),
-                              timestamp_at_frame_start=args.input_type in _frame_start_timestamp_types,
-                              short_frame_adjust=_frame_start_timestamp_types.get(args.input_type, 0))
+                              timestamp_at_frame_start=args.input_type in _frame_start_timestamp_types)

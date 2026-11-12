@@ -23,7 +23,6 @@ import mlat.client.version
 import time
 
 from mlat.client import util
-from mlat.client.receiver import ReceiverConnection
 from mlat.client.jsonclient import JsonServerConnection
 from mlat.client.coordinator import Coordinator
 from mlat.client import options
@@ -96,8 +95,7 @@ location pin from the coverage maps.""",
 
     outputs = options.build_outputs(args)
 
-    receiver = ReceiverConnection(host=args.input_connect[0], port=args.input_connect[1],
-                                  mode=options.connection_mode(args))
+    receiver = options.build_receiver_connection(args)
 
     if args.uuid_path is not None:
         uuid_path = [ args.uuid_path ]
